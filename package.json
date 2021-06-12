@@ -1,0 +1,6 @@
+{
+  "name": "durable-objects-websocket-backend",
+  "version": "1.0.0",
+  "description": "Backend for my interactive fishbowl game using Durable Objects",
+  "module": "./src/index.mjs"
+}
