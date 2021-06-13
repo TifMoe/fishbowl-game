@@ -1,0 +1,36 @@
+.counter {
+    max-width: 250px;
+    height:  100%;
+    max-height: 100px;
+    width: 60%;
+    display: block;
+    margin: auto;
+    margin-top: 3%;
+    margin-bottom: 5%;
+    background-color: #555F7D;
+    border-radius: 10px;
+}
+
+.count {
+    padding: 20px;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.logo {
+    display: block;
+    max-height: 250px;
+  }
+  
+  img {
+    margin-top: 10px;
+    height: 40vmin;
+    max-height: 230px;
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 600px) {
+    .counter {
+        background-color: transparent;
+    }
+  }

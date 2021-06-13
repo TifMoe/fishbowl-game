@@ -1,0 +1,24 @@
+{
+    "rounds": [
+        {
+            "order": 1,
+            "name": "Taboo",
+            "rules": "Be creative about describing the card value but don't say any word on the card!"
+        },
+        {
+            "order": 2,
+            "name": "Charades",
+            "rules": "Let your inner actor out and help your team guess the card without saying a thing!"
+        },
+        {
+            "order": 3,
+            "name": "Password",
+            "rules": "You can only utter a single word to get your team to guess the card!"
+        },
+        {
+            "order": 4,
+            "name": "Bonus",
+            "rules": "Get creative - only use sounds or try a round of charades with a sheet over you"
+        }
+    ]
+}

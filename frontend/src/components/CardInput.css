@@ -1,0 +1,111 @@
+input[type=text] {
+    width: 50%;
+    min-width: 150px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+input[type=text]:focus {
+    border: 3px solid#F25577;
+}
+
+
+button[type=submit] {
+    background-color: #e7e7e7;
+    color: black;
+    border: none;
+    padding: 14px 40px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    margin-top: 10px;
+}
+
+button {
+    transition-duration: 0.4s;
+}
+
+button:hover {
+    background-color: #F4F7B4;
+    color: rgb(27, 27, 27);
+}
+
+.start-button:disabled {
+    opacity: 40%;
+    pointer-events: none;
+}
+
+.small-text {
+    font-size: 15px;
+}
+
+.explainer {
+    display: block;
+    padding: 10px;
+    margin: auto 15%;
+}
+
+.card-input {
+    display: block;
+    margin: auto 10%;
+}
+
+.card-form {
+    width: 80%;
+    margin: auto;
+}
+
+.start-button {
+    width: 80%;
+    max-width: 300px;
+}
+
+/* Pop up modal */
+.modal {
+    position: fixed; /* Stay in place */
+    z-index: 1 !important; /* Sit on top */
+    display: -webkit-box;
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(41, 44, 52, 0.808); /* #292C34 w/ opacity */
+}
+
+.modal > .message {
+    background-color: #fefefe;
+    border-radius: 3%;
+    text-align: center;
+    vertical-align: middle;
+    margin: 200px auto;
+    padding: 2% 5% 5%;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px;
+    max-height: 300px;
+    height: 50%;
+    box-shadow: 0 16px 32px 0 rgba(0, 9, 17, 0.836);
+}
+
+.modal > .message > p, h1 {
+        color: #292C34 !important;
+}
+
+.modal > button {
+    margin-bottom: 5%;
+    vertical-align: bottom !important;
+}
+
+.close-button {
+    background-color: #F25577;
+}
+
+.yes-confirm {
+    background-color: #2EDDCB;
+}
