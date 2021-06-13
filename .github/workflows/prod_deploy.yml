@@ -3,14 +3,14 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
 
       # DEPLOY FRONTEND TO CLOUDFLARE WORKERS
       - name: Install dependencies for frontent build
