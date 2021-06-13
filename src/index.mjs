@@ -122,8 +122,11 @@ export class Game {
     this.env = env;
 
     this.sessions = []
+  }
 
-    this.state = {
+  async initialize() {
+    let stored = await this.storage.get("state");
+    this.state = stored || {
       current_round: 0,
       started: false,
       team_1_turn: true,
@@ -160,6 +163,7 @@ export class Game {
     websocket.addEventListener("message", async msg => {
 
       let {event, data} = this.validate(websocket, msg.data, gameID);
+      let currentState = this.state;
 
       switch (event.name) {
         // Listener when a game is first initialized with team names
@@ -167,31 +171,30 @@ export class Game {
         case 'newGame':
           
           // Initialize new game state with given team names
-          this.state.teams.team_1.name = data.team_1;
-          this.state.teams.team_2.name = data.team_2;
-          let dataStr = this.state
+          currentState.teams.team_1.name = data.team_1;
+          currentState.teams.team_2.name = data.team_2;
 
-          await this.storage.put("state", dataStr);
+          this.state = currentState;
+          await this.storage.put("state", this.state);
           websocket.send(JSON.stringify({name: "newGame", data: gameID}));
           break;
 
         // Listener to return the game state
         case 'getGame':        
-          this.state = await this.storage.get("state");
-          websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
+          websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(currentState)}));
           break;
           // this.broadcast(JSON.stringify({name: "gameState", data: state}));
 
         // Listener to add a card to the game state
         case 'newCard':
-          this.state = await this.storage.get("state");
           let newCard = data.value
-          this.state.cards.push({
+          currentState.cards.push({
             id: Math.random().toString(36).slice(-10),
             value: newCard,
             used: false
           })
-          this.state.unused_cards = ++this.state.unused_cards;
+          currentState.unused_cards = ++currentState.unused_cards;
+          this.state = currentState;
 
           await this.storage.put("state", this.state);
           websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
@@ -199,16 +202,19 @@ export class Game {
 
         // Listener to start a new round
         case 'startRound':
-          this.state = await this.storage.get("state");
-          this.state.started = true;
-          this.state.current_round = ++this.state.current_round,
-          this.state.team_1_turn = (this.state.current_round % 2) // Team 1 should start for every odd round
+          currentState.started = true;
+          currentState.current_round = ++currentState.current_round,
+          currentState.team_1_turn = (currentState.current_round % 2) // Team 1 should start for every odd round
 
           // Set all cards in game to `unused` state
-          this.state.cards.forEach(function (card) {
+          let resetCards = [];
+          currentState.cards.forEach(function (card) {
             card.used = false;
+            resetCards.push(card)
           })
-          this.state.unused_cards = this.state.cards.length;
+          currentState.cards = resetCards;
+          currentState.unused_cards = currentState.cards.length;
+          this.state = currentState;
 
           await this.storage.put("state", this.state);
           websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
@@ -216,24 +222,24 @@ export class Game {
 
         // Listener to draw a random unused card
         case 'getRandomCard':
-          this.state = await this.storage.get("state");
-          let unusedCards =  this.state.cards.filter(function(card) {
+          let unusedCards =  currentState.cards.filter(function(card) {
             return !card.used;
           });
 
-          // Only send back unused cards in game state
-          this.state.cards = unusedCards;
-          this.state.unused_cards = unusedCards.length;
+          let returnCards = {
+            cards: unusedCards,
+            unused_cards: unusedCards.length
+          }
 
-          websocket.send(JSON.stringify({name: "randomCard", data: JSON.stringify(this.state)}));
+          websocket.send(JSON.stringify({name: "randomCard", data: JSON.stringify(returnCards)}));
           break;
 
         // Listener to mark card as used
         case 'usedCard':
-          this.state = await this.storage.get("state");
-          let cardIndex = this.state.cards.findIndex((card => card.id == data.cardID));
-          this.state.cards[cardIndex].used = true;
-          this.state.unused_cards =  --this.state.unused_cards;
+          let cardIndex = currentState.cards.findIndex((card => card.id == data.cardID));
+          currentState.cards[cardIndex].used = true;
+          currentState.unused_cards =  --currentState.unused_cards;
+          this.state = currentState;
 
           await this.storage.put("state", this.state);
           websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
@@ -244,6 +250,20 @@ export class Game {
 
   // Handle HTTP requests from clients.
   async fetch(request) {
+    // Make sure we're fully initialized from storage.
+    if (!this.initializePromise) {
+      this.initializePromise = this.initialize().catch((err) => {
+        // If anything throws during initialization then we need to be
+        // sure sure that a future request will retry initialize().
+        // Note that the concurrency involved in resetting this shared
+        // promise on an error can be tricky to get right -- we don't
+        // recommend customizing it.
+        this.initializePromise = undefined;
+        throw err
+      });
+    }
+    await this.initializePromise;
+
     return await handleErrors(request, async () => {
       // We expect that a client is trying to establish a new websocket connection
       if (request.headers.get("Upgrade") != "websocket") {
