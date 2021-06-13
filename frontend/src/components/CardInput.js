@@ -15,16 +15,18 @@ class CardInput extends Component {
 
     componentDidMount() {
         // EVENT LISTENERS //
-        this.props.socket.on('cardCount', this.cardCount);
+        this.props.socket.on('gameState', this.gameState);
     }
 
     componentWillUnmount() {
-        this.props.socket.off('cardCount', this.cardCount);
+        this.props.socket.off('gameState', this.gameState);
     }
 
-    cardCount = (data) => {
-        console.log("Here's the new card count: ", data)
-        this.setState({count: data})
+    // gameState is an event listener for updates to the game state
+    gameState = (data) => {
+        let response = JSON.parse(data)
+        console.log("Here's the new card count: ", data.unused_cards)
+        this.setState({ count: response.unused_cards })
     }
 
     onChange = (e) => {
@@ -109,8 +111,7 @@ const StartGame = ({ startHandler, ready }) => (
         <button
             className="start-button"
             onClick={startHandler}
-            // TODO fix this validation after refactoring state management
-            // disabled={!ready}
+            disabled={!ready}
         >Start Game</button>
     </div>
 )

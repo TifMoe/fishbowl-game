@@ -71,17 +71,21 @@ class NewGame extends Component {
 
     onSubmit(e) {
         e.preventDefault();
-        // Save team names and fetch new game namespace
-        if (this.state.team1 !== "" && this.state.team2 !== "") {
-                let data = JSON.stringify({
-                    team_1: capitalize(this.state.team1),
-                    team_2: capitalize(this.state.team2),
-                });
-                console.log("Sending team names to server: ", data)
-                this.socket.emit('newGame', data);
-        } else {
-            // TODO: We should raise input validation error here
-            console.log("Team names are required to start a new game!");
+        try {
+            // Save team names and fetch new game namespace
+            if (this.state.team1 !== "" && this.state.team2 !== "") {
+                    let data = JSON.stringify({
+                        team_1: capitalize(this.state.team1),
+                        team_2: capitalize(this.state.team2),
+                    });
+                    console.log("Sending team names to server: ", data)
+                    this.socket.emit('newGame', data);
+            } else {
+                // TODO: We should raise input validation error here
+                console.log("Team names are required to start a new game!");
+            }
+        } catch (err) {
+            Sentry.captureException(err);
         }
       }
 
@@ -113,12 +117,10 @@ class NewGame extends Component {
                         minLength="2"
                         onChange={this.onChange}
                     />
-                    <MyError />
 
                     <button type="submit" disabled={!this.state.ok}> Start a new game! </button>
                 </form>
             </div>
-
         </div>
         );
     }
