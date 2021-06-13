@@ -121,7 +121,7 @@ export class Game {
     // `env` is our environment bindings (discussed earlier).
     this.env = env;
 
-    this.sessions = []
+    this.sessions = new Set();
   }
 
   async initialize() {
@@ -154,9 +154,8 @@ export class Game {
   async handleSession(websocket, gameID) {
     websocket.accept()
 
-    // Create our session and add it to the sessions list.
-    let session = {websocket};
-    this.sessions.push(session);
+    // Add our websocket to the list of connections for this game
+    this.sessions.add(websocket);
   
     // We'll set up one event listener called message (per the docs: https://developers.cloudflare.com/workers/runtime-apis/websockets)
     // Our client will always send a message with a `name` field so we can switch on this for handling the request
@@ -176,14 +175,13 @@ export class Game {
 
           this.state = currentState;
           await this.storage.put("state", this.state);
-          websocket.send(JSON.stringify({name: "newGame", data: gameID}));
+          this.broadcast(JSON.stringify({name: "newGame",  data: gameID}));
           break;
 
         // Listener to return the game state
         case 'getGame':        
-          websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(currentState)}));
+          this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(currentState)}));
           break;
-          // this.broadcast(JSON.stringify({name: "gameState", data: state}));
 
         // Listener to add a card to the game state
         case 'newCard':
@@ -197,7 +195,7 @@ export class Game {
           this.state = currentState;
 
           await this.storage.put("state", this.state);
-          websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
+          this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
           break;
 
         // Listener to start a new round
@@ -217,7 +215,7 @@ export class Game {
           this.state = currentState;
 
           await this.storage.put("state", this.state);
-          websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
+          this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
           break;
 
         // Listener to draw a random unused card
@@ -242,7 +240,7 @@ export class Game {
           this.state = currentState;
 
           await this.storage.put("state", this.state);
-          websocket.send(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
+          this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
           break;
       }
     })
@@ -253,11 +251,6 @@ export class Game {
     // Make sure we're fully initialized from storage.
     if (!this.initializePromise) {
       this.initializePromise = this.initialize().catch((err) => {
-        // If anything throws during initialization then we need to be
-        // sure sure that a future request will retry initialize().
-        // Note that the concurrency involved in resetting this shared
-        // promise on an error can be tricky to get right -- we don't
-        // recommend customizing it.
         this.initializePromise = undefined;
         throw err
       });
@@ -293,7 +286,7 @@ export class Game {
     }
 
     // Iterate over all the sessions sending them messages.
-    this.sessions = this.sessions.forEach(websocket => {
+    this.sessions.forEach(websocket => {
         try {
           websocket.send(message);
           return true;
