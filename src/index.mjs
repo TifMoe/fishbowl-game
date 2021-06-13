@@ -126,29 +126,7 @@ export class Game {
 
   async initialize() {
     let stored = await this.storage.get("state");
-    this.state = stored || {
-      current_round: 0,
-      started: false,
-      team_1_turn: true,
-      unused_cards: 0,
-      cards: [],
-      teams: {
-        team_1: {
-          name: "",
-          round_1_pts: 0,
-          round_2_pts: 0,
-          round_3_pts: 0,
-          round_4_pts: 0,
-        },
-        team_2: {
-          name: "",
-          round_1_pts: 0,
-          round_2_pts: 0,
-          round_3_pts: 0,
-          round_4_pts: 0,
-        }
-      }
-    }
+    this.state = stored || this.initialState();
   }
 
   async handleSession(websocket, gameID) {
@@ -166,21 +144,30 @@ export class Game {
 
       switch (event.name) {
         // Listener when a game is first initialized with team names
-        // We expect the data passed in will be {"name":"newGame","data":"{\"team_1\":\"Team Name\",\"team_2\":\"Another Thing\"}"}
+        // We expect the data passed in will be {"name":"newGame","data":"{\"team_1\":\"Da\",\"team_2\":\"Bears\"}"}
         case 'newGame':
-          
-          // Initialize new game state with given team names
-          currentState.teams.team_1.name = data.team_1;
-          currentState.teams.team_2.name = data.team_2;
+          this.state = this.initialState();
 
-          this.state = currentState;
+          // Initialize new game state with given team names
+          this.state.teams.team_1.name = data.team_1;
+          this.state.teams.team_2.name = data.team_2;
+
           await this.storage.put("state", this.state);
           this.broadcast(JSON.stringify({name: "newGame",  data: gameID}));
+          this.broadcast(JSON.stringify({name: "gameState",  data: JSON.stringify(this.state)}));
           break;
 
         // Listener to return the game state
         case 'getGame':        
           this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(currentState)}));
+          break;
+
+        // Listener to force the game to end
+        case 'endGame':
+          currentState.current_round = 5; // This will force the game to the final score screen
+          this.state = currentState;
+          await this.storage.put("state", this.state);
+          this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
           break;
 
         // Listener to add a card to the game state
@@ -218,14 +205,33 @@ export class Game {
           this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
           break;
 
+        // Listener to start a new team turn
+        case 'startNextTurn':
+          currentState.team_1_turn = !currentState.team_1_turn
+          this.state = currentState;
+
+          await this.storage.put("state", this.state);
+          this.broadcast(JSON.stringify({name: "gameState", data: JSON.stringify(this.state)}));
+          break;
+
         // Listener to draw a random unused card
         case 'getRandomCard':
+          let randIndex = 0
+          let currentID = data.cardID == null ? '' : data.cardID;
           let unusedCards =  currentState.cards.filter(function(card) {
             return !card.used;
           });
 
+          // If we have more than one card left in the round then make sure to avoid returning current card
+          if (unusedCards.length > 1) {
+            do {
+              randIndex = Math.floor(Math.random() * unusedCards.length)
+            }
+            while (unusedCards[randIndex].id ===  currentID)
+          }
+
           let returnCards = {
-            cards: unusedCards,
+            card: unusedCards[randIndex],
             unused_cards: unusedCards.length
           }
 
@@ -237,6 +243,14 @@ export class Game {
           let cardIndex = currentState.cards.findIndex((card => card.id == data.cardID));
           currentState.cards[cardIndex].used = true;
           currentState.unused_cards =  --currentState.unused_cards;
+
+          // Increment point value for current team in current round
+          if (currentState.current_round > 4) {
+            websocket.send(JSON.stringify({error: "invalid round number"}));
+          }
+          let team = currentState.team_1_turn ? 'team_1' : 'team_2';
+          let round = "round_" + currentState.current_round + "_pts";
+          currentState.teams[team][round] = ++currentState.teams[team][round]
           this.state = currentState;
 
           await this.storage.put("state", this.state);
@@ -276,6 +290,33 @@ export class Game {
       await this.handleSession(server, gameID);
       return new Response(null, { status: 101, webSocket: client });
     })
+  }
+
+  initialState() {
+    // Returns empty game state object
+    return {
+      current_round: 0,
+      started: false,
+      team_1_turn: true,
+      unused_cards: 0,
+      cards: [],
+      teams: {
+        team_1: {
+          name: "",
+          round_1_pts: 0,
+          round_2_pts: 0,
+          round_3_pts: 0,
+          round_4_pts: 0,
+        },
+        team_2: {
+          name: "",
+          round_1_pts: 0,
+          round_2_pts: 0,
+          round_3_pts: 0,
+          round_4_pts: 0,
+        }
+      }
+    };
   }
 
   // broadcast() broadcasts a message to all clients.
