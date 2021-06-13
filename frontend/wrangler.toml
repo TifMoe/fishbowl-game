@@ -1,0 +1,17 @@
+type = "webpack"
+account_id = "661484bfa811d50ad0a7c946485ad9ae"
+zone_id = "821cee03d4ed98382ae44898382d29dc"
+
+[env.staging]
+name = "fishbowl-staging"
+workers_dev = false
+route = "staging.fishbowl.rocks/*"
+
+[env.production]
+name = "fishbowl"
+workers_dev = false
+route = "fishbowl.rocks/*"
+
+[site]
+bucket = "./build"
+entry-point = "workers-site"

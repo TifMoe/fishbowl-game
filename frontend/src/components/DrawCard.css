@@ -1,0 +1,61 @@
+.card {
+    background-color: whitesmoke;
+    border-radius: 5px;
+    width: 80%;
+    height: 80%;
+    max-width: 350px;
+    min-height: 250px;
+    margin: auto;
+    display: block;
+    color: #292C34;
+    text-align: center;
+}
+
+.actions {
+    width: 80%;
+    max-width: 350px;
+    margin: auto;
+    min-height: 70px;
+}
+
+.card-value {
+    padding: 10%;
+}
+
+button {
+    margin: 3%;
+    min-width: 80px;
+}
+
+.skip:disabled {
+    opacity: 40% !important;
+    pointer-events: none;
+}
+
+.skip {
+    background-color: rgb(242, 85, 119, .75);
+}
+
+.skip:hover{
+    background-color: rgb(242, 85, 119);
+}
+
+.done {
+    background-color: rgb(46, 221, 204, .75);
+}
+
+.done:hover{
+    background-color: rgb(46, 221, 204);
+}
+
+.next-round {
+    width: 40%;
+    max-width: 175px;
+    padding: 14px 10px !important;
+    margin: 5%;
+}
+
+.next-round:disabled {
+    opacity: 1% !important;
+    pointer-events: none;
+}

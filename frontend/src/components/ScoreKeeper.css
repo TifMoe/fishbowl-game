@@ -1,0 +1,29 @@
+  .score {
+    margin: 0 auto;
+    height: 90%;
+    text-align: center;
+    padding-top: 20px;
+    font-size: 30px;
+  }
+
+  .team-name {
+    margin: 0 auto;
+    height: 90%;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .pink-team {
+    color: rgb(242, 85, 119)
+  }
+
+  .blue-team {
+    color: rgb(46, 221, 204)
+  }
+
+  @media screen and (max-width: 600px) {
+    .score {
+        padding: 0;
+    }
+  }

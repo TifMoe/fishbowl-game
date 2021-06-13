@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@master
+
+      # DEPLOY FRONTEND TO CLOUDFLARE WORKERS
+      - name: Install dependencies for frontent build
+        run: npm install --prod --pure-lockfile
+        working-directory: frontend
+
+      - name: Build site
+        run: 'REACT_APP_WS_SCHEMA=wss REACT_APP_WS_HOST=worker.tifmoe.workers.dev npm run build'
+        working-directory: frontend
+        env:
+          REACT_APP_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+      - name: Publish to Cloudflare Workers
+        uses: cloudflare/wrangler-action@1.1.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          wranglerVersion: '1.6.0'
+          environment: 'production'
+          workingDirectory: frontend
