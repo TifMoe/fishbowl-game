@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Socket from '../Socket';
-import MyError from './MyError';
+import * as Sentry from '@sentry/browser';
 
 import './NewGame.css';
 
