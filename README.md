@@ -1,18 +1,17 @@
-# 👷 Durable Objects template
+# Fishbowl Online Game
 
-## Note: You must use [wrangler](https://developers.cloudflare.com/workers/cli-wrangler/install-update) 1.17 or newer to use this template.
+React web app to play FishBowl remotely! Get your friends on a video call, share a link to the game, and have everyone throw a few nouns in the "bowl" to get started :) 
 
-## Please read the [Durable Object documentation](https://developers.cloudflare.com/workers/learning/using-durable-objects) before using this template.
+## Technologies
+Frontend: **[React](https://create-react-app.dev/) app deployed with [Cloudflare Workers](https://workers.cloudflare.com/)**
 
-A template for kick-starting a Cloudflare Workers project that uses Durable Objects.
+Backend: **[Cloudflare Workers](https://workers.cloudflare.com/) + [Websockets](https://developers.cloudflare.com/workers/runtime-apis/websockets) + [Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/durable-objects) backend**
+This is v2 of my initial version here where I used a [GoLang]((https://golang.org/)) backend deployed to a [Kubernetes cluster](https://kubernetes.io/) on [Digital Ocean](https://www.digitalocean.com/) - this was not cost effective! Much happier to keep everything on the edge of Cloudflare's network by utilizing the new Durable Objects + Websockets support for Workers. 
 
-This template is meant to be the simplest way to get started with Durable Objects, for developers who just want to be able to write some code without worrying about a JavaScript bundler. If you want to be able to bundle dependencies alongside your code, you're better off starting with one of the other Durable Objects templates:
+Check out these cool blogs to learn more about Durable Objects and why they're awesome:
+- https://blog.cloudflare.com/introducing-workers-durable-objects/
+- https://blog.cloudflare.com/building-real-time-games-using-workers-durable-objects-and-unity/
 
-- Rollup + ES Modules: https://github.com/cloudflare/durable-objects-rollup-esm
-- Webpack + CommonJS Modules: https://github.com/cloudflare/durable-objects-webpack-commonjs
+CI/CD with [Github Actions](https://help.github.com/en/actions)
 
-Worker code is in `src/`. The normal fetch handler and the Durable Object `Counter` class are in `src/index.mjs`.
-
-Wrangler is configured to upload all files in the `src/` directory, and `index.mjs` is configured to be the main module.
-
-On your first publish, you must use `wrangler publish --new-class Counter` to allow the Counter class to implement Durable Objects.
+[![Deploy](https://github.com/TifMoe/fishbowl-game/actions/workflows/prod_deploy.yml/badge.svg)](https://github.com/TifMoe/fishbowl-game/actions/workflows/prod_deploy.yml)
